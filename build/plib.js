@@ -787,6 +787,10 @@ Sound.prototype.start = function() {
 /**
  *
  */
+Sound.prototype.play = Sound.prototype.start;
+/**
+ *
+ */
 Sound.prototype.stop = function() {
     this.source.stop(0);
     this.source.disconnect();
@@ -808,18 +812,16 @@ Sound.prototype.clone = function() {
     return clone;
 };
 
+/**
+ *
+ */
+Sound.CONTEXT = null;
 if (window.webkitAudioContext) {
     Sound.CONTEXT = new webkitAudioContext();
-    // console.log("webkitAudioContext ready.");
 } else if (window.mozAudioContext) {
     Sound.CONTEXT = new mozAudioContext();
-    // console.log("mozAudioContext ready.");
 } else if (window.AudioContext) {
     Sound.CONTEXT = new AudioContext();
-    // console.log("AudioContext ready.");
-} else {
-    Sound.CONTEXT = null;
-    // console.log("AudioContext is not defined.");
 }
 
 /**
