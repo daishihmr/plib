@@ -254,6 +254,14 @@ var Application = function(layerCount, mainLayerIndex) {
     }.bind(this);
     window.requestAnimationFrame(render);
 };
+
+/**
+ *
+ */
+Application.prototype.end = function() {
+    // TODO
+};
+
 /**
  *
  */

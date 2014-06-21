@@ -11,8 +11,8 @@ var Label = function(text, fontSize, color) {
     this.alpha = 1.0;
 
     this._text = text;
-    this.fontSize = fontSize;
-    this.setColor(color);
+    this._fontSize = fontSize || 24;
+    this.setColor(color || 0);
 
     var texture = this.updateText();
     Sprite.call(this, texture);
@@ -24,12 +24,19 @@ Label.prototype = Object.create(Sprite.prototype, {
             this.setText(v);
         }
     },
+    fontSize: {
+        get: function() { return this._fontSize },
+        set: function(v) {
+            this.setFontSize(v);
+        }
+    }
 });
 /**
  *
  */
 Label.prototype.setColor = function(color) {
-    Util.setStyle(this, color);
+    // Util.setStyle(this, color);
+    this.fillStyle = "hsla(" + color + ", 50%, 80%, 1.0)";
 };
 /**
  *
@@ -43,25 +50,34 @@ Label.prototype.setText = function(text) {
 /**
  *
  */
+Label.prototype.setFontSize = function(fontSize) {
+    this._fontSize = fontSize;
+    this.texture = this.updateText();
+    this.width = this.texture.width;
+    this.height = this.texture.height;
+};
+/**
+ *
+ */
 Label.prototype.updateText = function() {
     var c = window.document.createElement("canvas");
-    var ctx = c.getContext2d();
+    var ctx = c.getContext2d(true);
 
-    ctx.font = "" + this.fontSize + "px 'uni'";
+    ctx.font = "" + this._fontSize + "px 'uni'";
 
     var metrics = ctx.measureText(this._text);
     c.width = metrics.width + 5;
-    c.height = this.fontSize;
+    c.height = this._fontSize;
 
-    ctx.font = "" + this.fontSize + "px 'uni'";
+    ctx.font = "" + this._fontSize + "px 'uni'";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = this.fillStyle;
-    ctx.strokeStyle = this.strokeStyle;
+    // ctx.strokeStyle = this.strokeStyle;
     ctx.lineWidth = 2;
 
     ctx.fillText(this._text, c.width*0.5, c.height*0.5);
-    ctx.strokeText(this._text, c.width*0.5, c.height*0.5);
+    // ctx.strokeText(this._text, c.width*0.5, c.height*0.5);
 
     return c;
 };

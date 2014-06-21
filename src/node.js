@@ -2,9 +2,25 @@
  * @class
  */
 var Node = function() {
+    /**
+     *
+     */
     this.parent = null;
+
+    /**
+     *
+     */
     this.children = [];
+
+    /**
+     *
+     */
     this.frame = 0;
+
+    /**
+     *
+     */
+    this.visible = true;
 };
 /**
  * @param {Node} child
@@ -19,6 +35,7 @@ Node.prototype.addChild = function(child) {
  */
 Node.prototype.addChildTo = function(parent) {
     parent.addChild(this);
+    return this;
 };
 /**
  * @param {Node} child
@@ -36,6 +53,7 @@ Node.prototype.removeChild = function(child) {
  */
 Node.prototype.remove = function() {
     if (this.parent !== null) this.parent.removeChild(this);
+    return this;
 };
 /**
  * @private
@@ -55,7 +73,10 @@ Node.prototype._update = function(app) {
  */
 Node.prototype._draw = function(context) {
     context.save();
-    this.draw(context);
+    if (this.visible) {
+        this.predraw(context);
+        this.draw(context);
+    }
     for (var i = 0, len = this.children.length; i < len; i++) {
         this.children[i]._draw(context);
     }
@@ -65,6 +86,10 @@ Node.prototype._draw = function(context) {
  * @param {Application} app
  */
 Node.prototype.update = function(app) {};
+/**
+ * @param {CanvasRenderingContext2D} context
+ */
+Node.prototype.predraw = function(context) {};
 /**
  * @param {CanvasRenderingContext2D} context
  */

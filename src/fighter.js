@@ -2,7 +2,10 @@
  * @class
  * @extends Sprite
  */
-var Fighter = function(color, width, height) {
+var Fighter = function(color, w, h) {
+    var canvas = new Canvas(w, h);
+    var context = canvas.context;
+
     Util.setStyle(context, 220);
 
     context.beginPath();
@@ -29,13 +32,6 @@ var Fighter = function(color, width, height) {
     context.fill();
     context.stroke();
 
-    Sprite.call(this, texture);
-
-    var texture = new Canvas(width, height)
-        .set({ color: color })
-        .drawRect(2, 2, width-4, height-4)
-        .toTexture();
-
-    Sprite.call(this, texture);
+    Sprite.call(this, canvas.toTexture());
 };
 Fighter.prototype = Object.create(Sprite.prototype);

@@ -27,3 +27,8 @@ TweenAction.prototype.update = function(target) {
     }
     return Action.prototype.update.call(this, target);
 };
+TweenAction.prototype.finalize = function(target) {
+    for (var key in this.param) {
+        target[key] = this.param[key];
+    }
+}

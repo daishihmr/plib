@@ -39,7 +39,7 @@ var NineleapUtil = {
         if (NineleapUtil.isOn9leap()) {
             return window.location.pathname.match(/^\/games\/(\d+)/)[1];
         } else {
-            return "1888";
+            return NineleapUtil.DEBUG_GAME_ID;
         }
     },
 
@@ -122,3 +122,5 @@ var NineleapUtil = {
         return NineleapUtil.createURL("ranking_memories.json", "?max=" + max);
     },
 };
+
+NineleapUtil.DEBUG_GAME_ID = "1888";

@@ -21,8 +21,12 @@ Tweener.prototype.update = function(app) {
         }
         if (action.update(this.target)) {
             this.actionPointer += 1;
-            if (this.loop && this.actions.length === this.actionPointer) {
-                this.actionPointer = 0;
+            if (this.actions.length === this.actionPointer) {
+                if (this.loop) {
+                    this.actionPointer = 0;
+                } else {
+                    this.remove();
+                }
             }
         }
     }

@@ -1,10 +1,10 @@
 /**
  * @class
- * @extends Node
+ * @extends Object2d
  * @param {HTMLCanvasElement} texture
  */
 var Sprite = function(texture) {
-    Node.call(this);
+    Object2d.call(this);
 
     /**
      *
@@ -22,51 +22,21 @@ var Sprite = function(texture) {
     /**
      *
      */
-    this.x = 0.0;
-    /**
-     *
-     */
-    this.y = 0.0;
-    /**
-     *
-     */
-    this.rotation = 0.0;
-    /**
-     *
-     */
-    this.scaleX = 1.0;
-    /**
-     *
-     */
-    this.scaleY = 1.0;
-
-    /**
-     *
-     */
     this.alpha = 1.0;
 
     /**
      *
      */
     this.blendMode = "lighter";
-
-    /**
-     *
-     */
-    this.visible = true;
 };
-Sprite.prototype = Object.create(Node.prototype);
+Sprite.prototype = Object.create(Object2d.prototype);
 Sprite.prototype.draw = function(context) {
-    if (!this.visible) return;
-
     context.globalAlpha = this.alpha;
     context.globalCompositeOperation = this.blendMode;
 
-    context.translate(this.x, this.y);
-    context.rotate(this.rotation);
-    context.scale(this.scaleX, this.scaleY);
-    context.drawImage(this.texture, -this.width*0.5, -this.height*0.5);
+    context.drawImage(this.texture, -this.width * this.originX, -this.height * this.originY);
 };
+
 /**
  *
  */

@@ -48,14 +48,15 @@ var SC_ASPECT_INV = SC_H / SC_W;
  */
 var IS_MOBILE = (window.navigator.userAgent.indexOf("iPhone") !== -1 || window.navigator.userAgent.indexOf("Android") !== -1);
 
-HTMLCanvasElement.prototype.getContext2d = function() {
+HTMLCanvasElement.prototype.getContext2d = function(v) {
+    v = !!v;
     var context = this.getContext("2d");
     if (context.hasOwnProperty("imageSmoothingEnabled")) {
-        context.imageSmoothingEnabled = false;
+        context.imageSmoothingEnabled = v;
     } else if (context.hasOwnProperty("mozImageSmoothingEnabled")) {
-        context.mozImageSmoothingEnabled = false;
+        context.mozImageSmoothingEnabled = v;
     } else if (context.hasOwnProperty("webkitImageSmoothingEnabled")) {
-        context.webkitImageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = v;
     }
     return context;
 };
@@ -316,6 +317,14 @@ var Application = function(layerCount, mainLayerIndex) {
     }.bind(this);
     window.requestAnimationFrame(render);
 };
+
+/**
+ *
+ */
+Application.prototype.end = function() {
+    // TODO
+};
+
 /**
  *
  */
@@ -422,9 +431,25 @@ Application.INSTANCE = null;
  * @class
  */
 var Node = function() {
+    /**
+     *
+     */
     this.parent = null;
+
+    /**
+     *
+     */
     this.children = [];
+
+    /**
+     *
+     */
     this.frame = 0;
+
+    /**
+     *
+     */
+    this.visible = true;
 };
 /**
  * @param {Node} child
@@ -439,6 +464,7 @@ Node.prototype.addChild = function(child) {
  */
 Node.prototype.addChildTo = function(parent) {
     parent.addChild(this);
+    return this;
 };
 /**
  * @param {Node} child
@@ -456,6 +482,7 @@ Node.prototype.removeChild = function(child) {
  */
 Node.prototype.remove = function() {
     if (this.parent !== null) this.parent.removeChild(this);
+    return this;
 };
 /**
  * @private
@@ -475,7 +502,10 @@ Node.prototype._update = function(app) {
  */
 Node.prototype._draw = function(context) {
     context.save();
-    this.draw(context);
+    if (this.visible) {
+        this.predraw(context);
+        this.draw(context);
+    }
     for (var i = 0, len = this.children.length; i < len; i++) {
         this.children[i]._draw(context);
     }
@@ -485,6 +515,10 @@ Node.prototype._draw = function(context) {
  * @param {Application} app
  */
 Node.prototype.update = function(app) {};
+/**
+ * @param {CanvasRenderingContext2D} context
+ */
+Node.prototype.predraw = function(context) {};
 /**
  * @param {CanvasRenderingContext2D} context
  */
@@ -498,33 +532,126 @@ Node.prototype.onadded = function() {};
  */
 Node.prototype.onremoved = function() {};
 
+var Object2d = function() {
+    Node.call(this);
+    /**
+     *
+     */
+    this.width = 0;
+    /**
+     *
+     */
+    this.height = 0;
+
+    /**
+     *
+     */
+    this.x = 0.0;
+    /**
+     *
+     */
+    this.y = 0.0;
+    /**
+     *
+     */
+    this.rotation = 0.0;
+    /**
+     *
+     */
+    this.scaleX = 1.0;
+    /**
+     *
+     */
+    this.scaleY = 1.0;
+
+    /**
+     *
+     */
+    this.originX = 0.5;
+
+    /**
+     *
+     */
+    this.originY = 0.5;
+};
+Object2d.prototype = Object.create(Node.prototype);
+
+/**
+ *
+ */
+Object2d.prototype.predraw = function(context) {
+    context.translate(this.x, this.y);
+    context.rotate(this.rotation);
+    context.scale(this.scaleX, this.scaleY);
+};
+
+/**
+ *
+ */
+Object2d.prototype.setPosition = function(x, y) {
+    this.x = x;
+    this.y = y;
+    return this;
+};
+
+/**
+ *
+ */
+Object2d.prototype.setScale = function(x, y) {
+    if (arguments.length === 1) y = x;
+    this.scaleX = x;
+    this.scaleY = y;
+    return this;
+};
+
+/**
+ *
+ */
+Object2d.prototype.setRotation = function(r) {
+    this.rotation = r;
+    return this;
+};
+
 /**
  *
  */
 var Menu = function() {
     Node.call(this);
     this.selected = null;
+    this.enabled = true;
 };
 Menu.prototype = Object.create(Node.prototype);
 Menu.prototype.update = function(app) {
-    var p = app.pointing;
+    if (this.enabled) {
+        var p = app.pointing;
+        for (var i = 0, len = this.children.length; i < len; i++) {
+            var item = this.children[i];
+            if (this.selected === item) {
+                item.scaleX = item.scaleY = 1.0 + Math.sin(app.frame * 0.3) * 0.1;
+            } else {
+                item.scaleX = item.scaleY = 1.0;
+            }
+
+            if (p.isEnd && item.isHitPoint(p)) {
+                if (this.selected === item) {
+                    this.onSelectItem(item);
+                } else {
+                    this.selected = item;
+                    this.onPreSelectItem(item);
+                }
+                break;
+            }
+        }
+    }
+};
+Menu.prototype.enable = function() {
+    this.enabled = true;
+};
+Menu.prototype.disable = function() {
+    this.enabled = false;
     for (var i = 0, len = this.children.length; i < len; i++) {
         var item = this.children[i];
-        if (this.selected === item) {
-            item.scaleX = item.scaleY = 1.0 + Math.sin(app.frame * 0.3) * 0.1;
-        } else {
-            item.scaleX = item.scaleY = 1.0;
-        }
-
-        if (p.isEnd && item.isHitPoint(p)) {
-            if (this.selected === item) {
-                this.onSelectItem(item);
-            } else {
-                this.selected = item;
-                this.onPreSelectItem(item);
-            }
-            break;
-        }
+        item.scaleX = item.scaleY = 1.0;
     }
 };
 Menu.prototype.onPreSelectItem = function(item) {};
@@ -883,11 +1010,11 @@ SoundEngine.stopBgm = function() {
 
 /**
  * @class
- * @extends Node
+ * @extends Object2d
  * @param {HTMLCanvasElement} texture
  */
 var Sprite = function(texture) {
-    Node.call(this);
+    Object2d.call(this);
 
     /**
      *
@@ -905,51 +1032,21 @@ var Sprite = function(texture) {
     /**
      *
      */
-    this.x = 0.0;
-    /**
-     *
-     */
-    this.y = 0.0;
-    /**
-     *
-     */
-    this.rotation = 0.0;
-    /**
-     *
-     */
-    this.scaleX = 1.0;
-    /**
-     *
-     */
-    this.scaleY = 1.0;
-
-    /**
-     *
-     */
     this.alpha = 1.0;
 
     /**
      *
      */
     this.blendMode = "lighter";
-
-    /**
-     *
-     */
-    this.visible = true;
 };
-Sprite.prototype = Object.create(Node.prototype);
+Sprite.prototype = Object.create(Object2d.prototype);
 Sprite.prototype.draw = function(context) {
-    if (!this.visible) return;
-
     context.globalAlpha = this.alpha;
     context.globalCompositeOperation = this.blendMode;
 
-    context.translate(this.x, this.y);
-    context.rotate(this.rotation);
-    context.scale(this.scaleX, this.scaleY);
-    context.drawImage(this.texture, -this.width*0.5, -this.height*0.5);
+    context.drawImage(this.texture, -this.width * this.originX, -this.height * this.originY);
 };
+
 /**
  *
  */
@@ -972,6 +1069,20 @@ var Rect = function(color, width, height) {
     Sprite.call(this, texture);
 };
 Rect.prototype = Object.create(Sprite.prototype);
+
+/**
+ * @class
+ * @extends Sprite
+ */
+var RoundRect = function(color, width, height) {
+    var texture = new Canvas(width, height)
+        .set({ color: color })
+        .drawRoundRect(2, 2, width-4, height-4)
+        .toTexture();
+
+    Sprite.call(this, texture);
+};
+RoundRect.prototype = Object.create(Sprite.prototype);
 
 /**
  * @class
@@ -1047,6 +1158,44 @@ RandomPolygon.prototype = Object.create(Sprite.prototype);
 
 /**
  * @class
+ * @extends Sprite
+ */
+var Fighter = function(color, w, h) {
+    var canvas = new Canvas(w, h);
+    var context = canvas.context;
+
+    Util.setStyle(context, 220);
+
+    context.beginPath();
+    context.moveTo(w*0.35, h*0.4);
+    context.lineTo(w*0.4, h*0.8);
+    context.lineTo(w*0.2, h*0.9);
+    context.closePath();
+    context.fill();
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(w*0.65, h*0.4);
+    context.lineTo(w*0.8, h*0.9);
+    context.lineTo(w*0.6, h*0.8);
+    context.closePath();
+    context.fill();
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(w*0.5, h*0.1);
+    context.lineTo(w*0.65, h*0.7);
+    context.lineTo(w*0.35, h*0.7);
+    context.closePath();
+    context.fill();
+    context.stroke();
+
+    Sprite.call(this, canvas.toTexture());
+};
+Fighter.prototype = Object.create(Sprite.prototype);
+
+/**
+ * @class
  * @extends Node
  */
 var Label = function(text, fontSize, color) {
@@ -1057,28 +1206,48 @@ var Label = function(text, fontSize, color) {
     this.scaleY = 1.0;
     this.alpha = 1.0;
 
-    this.align = "center";
-    this.baseline = "middle";
-
-    this.text = text;
-    this.fontSize = fontSize;
-    this.setColor(color);
+    this._text = text;
+    this._fontSize = fontSize || 24;
+    this.setColor(color || 0);
 
     var texture = this.updateText();
     Sprite.call(this, texture);
 };
-Label.prototype = Object.create(Sprite.prototype);
+Label.prototype = Object.create(Sprite.prototype, {
+    text: {
+        get: function() { return this._text },
+        set: function(v) {
+            this.setText(v);
+        }
+    },
+    fontSize: {
+        get: function() { return this._fontSize },
+        set: function(v) {
+            this.setFontSize(v);
+        }
+    }
+});
 /**
  *
  */
 Label.prototype.setColor = function(color) {
-    Util.setStyle(this, color);
+    // Util.setStyle(this, color);
+    this.fillStyle = "hsla(" + color + ", 50%, 80%, 1.0)";
 };
 /**
  *
  */
 Label.prototype.setText = function(text) {
-    this.text = text;
+    this._text = text;
+    this.texture = this.updateText();
+    this.width = this.texture.width;
+    this.height = this.texture.height;
+};
+/**
+ *
+ */
+Label.prototype.setFontSize = function(fontSize) {
+    this._fontSize = fontSize;
     this.texture = this.updateText();
     this.width = this.texture.width;
     this.height = this.texture.height;
@@ -1088,25 +1257,23 @@ Label.prototype.setText = function(text) {
  */
 Label.prototype.updateText = function() {
     var c = window.document.createElement("canvas");
-    var ctx = c.getContext2d();
+    var ctx = c.getContext2d(true);
 
-    ctx.font = "" + this.fontSize + "px 'uni'";
-    ctx.textAlign = this.align;
-    ctx.textBaseline = this.baseline;
+    ctx.font = "" + this._fontSize + "px 'uni'";
 
-    var metrics = ctx.measureText(this.text);
+    var metrics = ctx.measureText(this._text);
     c.width = metrics.width + 5;
-    c.height = this.fontSize;
+    c.height = this._fontSize;
 
-    ctx.font = "" + this.fontSize + "px 'uni'";
+    ctx.font = "" + this._fontSize + "px 'uni'";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = this.fillStyle;
-    ctx.strokeStyle = this.strokeStyle;
+    // ctx.strokeStyle = this.strokeStyle;
     ctx.lineWidth = 2;
 
-    ctx.fillText(this.text, c.width*0.5, c.height*0.5);
-    ctx.strokeText(this.text, c.width*0.5, c.height*0.5);
+    ctx.fillText(this._text, c.width*0.5, c.height*0.5);
+    // ctx.strokeText(this._text, c.width*0.5, c.height*0.5);
 
     return c;
 };
@@ -1217,8 +1384,12 @@ Tweener.prototype.update = function(app) {
         }
         if (action.update(this.target)) {
             this.actionPointer += 1;
-            if (this.loop && this.actions.length === this.actionPointer) {
-                this.actionPointer = 0;
+            if (this.actions.length === this.actionPointer) {
+                if (this.loop) {
+                    this.actionPointer = 0;
+                } else {
+                    this.remove();
+                }
             }
         }
     }
@@ -1283,9 +1454,16 @@ Action.prototype.initialize = function(target) {
  */
 Action.prototype.update = function(target) {
     this.currentPos += 1;
+    if (this.currentPos === this.time) {
+        this.finalize(target);
+    }
     return this.currentPos >= this.time;
 };
-
+/**
+ *
+ */
+Action.prototype.finalize = function(target) {
+};
 /**
  * @class
  * @extends Action
@@ -1331,7 +1509,11 @@ TweenAction.prototype.update = function(target) {
     }
     return Action.prototype.update.call(this, target);
 };
-
+TweenAction.prototype.finalize = function(target) {
+    for (var key in this.param) {
+        target[key] = this.param[key];
+    }
+}
 /**
  *
  */
@@ -1364,6 +1546,25 @@ Canvas.prototype.drawRect = function(x, y, w, h) {
     this.context.strokeRect(x, y, w, h);
     return this;
 };
+Canvas.prototype.drawRoundRect = function(x, y, w, h, r) {
+    r = r || 10;
+
+    var c = this.context;
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.lineTo(x + w - r, y);
+    c.arcTo(x + w, y, x + w, y + r, r);
+    c.lineTo(x + w, y + h - r);
+    c.arcTo(x + w, y + h, x + w - r, y + h, r);
+    c.lineTo(x + r, y + h);
+    c.arcTo(x, y + h, x, y + h - r, r);
+    c.lineTo(x, y + r);
+    c.arcTo(x, y, x + r, y, r);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    return this;
+};
 Canvas.prototype.drawCircle = function(x, y, r) {
     this.context.arc(x, y, r, 0, Math.PI*2, false);
     this.context.fill();
@@ -1378,6 +1579,16 @@ Canvas.prototype.drawPolygon = function(x, y, r, sides, offset) {
     for (var i = 1; i < sides; i++) {
         var a = offset + Math.PI*2 * i / sides;
         this.context.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    }
+    this.context.closePath();
+    this.context.fill();
+    this.context.stroke();
+};
+Canvas.prototype.drawLines = function(vertices) {
+    this.context.beginPath();
+    this.context.moveTo(arguments[0][0], arguments[0][1]);
+    for (var i = 1; i < arguments.length; i++) {
+        this.context.lineTo(arguments[i][0], arguments[i][1]);
     }
     this.context.closePath();
     this.context.fill();
@@ -1425,7 +1636,7 @@ var NineleapUtil = {
         if (NineleapUtil.isOn9leap()) {
             return window.location.pathname.match(/^\/games\/(\d+)/)[1];
         } else {
-            return "1888";
+            return NineleapUtil.DEBUG_GAME_ID;
         }
     },
 
@@ -1508,3 +1719,5 @@ var NineleapUtil = {
         return NineleapUtil.createURL("ranking_memories.json", "?max=" + max);
     },
 };
+
+NineleapUtil.DEBUG_GAME_ID = "1888";
