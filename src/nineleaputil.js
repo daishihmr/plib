@@ -51,7 +51,10 @@ var NineleapUtil = {
             url: NineleapUtil.createMyDataURL()
         });
         jsonp.onsuccess = function(data) {
-            callback(data);
+            callback(null, data);
+        };
+        jsonp.onerror = function(error) {
+            callback(error);
         };
         jsonp.send();
     },
@@ -60,10 +63,14 @@ var NineleapUtil = {
      *
      */
     postMyData: function(data, callback) {
+        if (!NineleapUtil.isOn9leap()) {
+            callback("not on 9leap.net");
+            return;
+        }
         var xhr = new Xhr({
             type: "POST",
             url: NineleapUtil.createURL("user_memory.json"),
-            data: JSON.stringify(data),
+            data: "json=" + JSON.stringify(data),
         });
         xhr.onsuccess = function() {
             callback(null);

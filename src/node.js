@@ -76,9 +76,9 @@ Node.prototype._draw = function(context) {
     if (this.visible) {
         this.predraw(context);
         this.draw(context);
-    }
-    for (var i = 0, len = this.children.length; i < len; i++) {
-        this.children[i]._draw(context);
+        for (var i = 0, len = this.children.length; i < len; i++) {
+            this.children[i]._draw(context);
+        }
     }
     context.restore();
 };

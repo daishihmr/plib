@@ -357,7 +357,7 @@ Application.prototype.update = function() {
     }
     this._beforeTouching = this._touching;
 
-    this.currentScene._update(this);
+    if (this.currentScene) this.currentScene._update(this);
 
     p.beforeX = p.x;
     p.beforeY = p.y;
@@ -417,11 +417,15 @@ Application.prototype.pushScene = function(scene) {
  */
 Application.prototype.popScene = function() {
     var scene = this.sceneStack.pop();
-    scene.onexit();
-    scene.app = null;
-    if (this.sceneStack.length > 0) {
-        this.currentScene = this.sceneStack[this.sceneStack.length - 1];
-        this.currentScene.onenter();
+    if (scene) {
+        scene.onexit();
+        scene.app = null;
+        if (this.sceneStack.length > 0) {
+            this.currentScene = this.sceneStack[this.sceneStack.length - 1];
+            this.currentScene.onenter();
+        } else {
+            this.currentScene = null;
+        }
     }
 };
 
@@ -505,9 +509,9 @@ Node.prototype._draw = function(context) {
     if (this.visible) {
         this.predraw(context);
         this.draw(context);
-    }
-    for (var i = 0, len = this.children.length; i < len; i++) {
-        this.children[i]._draw(context);
+        for (var i = 0, len = this.children.length; i < len; i++) {
+            this.children[i]._draw(context);
+        }
     }
     context.restore();
 };
@@ -591,6 +595,15 @@ Object2d.prototype.predraw = function(context) {
 Object2d.prototype.setPosition = function(x, y) {
     this.x = x;
     this.y = y;
+    return this;
+};
+
+/**
+ *
+ */
+Object2d.prototype.setOrigin = function(x, y) {
+    this.originX = x;
+    this.originY = y;
     return this;
 };
 
@@ -785,6 +798,7 @@ var Xhr = function(param) {
         }
     };
     xhr.open(param.type || "GET", param.url);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
     if (param.responseType) {
         xhr.responseType = param.responseType;
     }
@@ -836,7 +850,11 @@ Jsonp.prototype.send = function() {
     } else {
         this.script.src = this.param.url + "?callback=" + this.callbackName;
     }
-    window.document.body.appendChild(this.script);
+    try {
+        window.document.body.appendChild(this.script);
+    } catch (e) {
+        this.onerror(e);
+    }
 };
 /**
  *
@@ -1362,6 +1380,24 @@ var Util = {
 };
 
 /**
+ *
+ */
+var Http = {
+
+    queryParameter: function(data) {
+        var result = "";
+        var first = true;
+        for (var key in data) if (data.hasOwnProperty(key)) {
+            if (!first) result += "&";
+            result += encodeURI(key) + "=" + encodeURI(data[key]);
+            first = false;
+        }
+        return result;
+    }
+
+};
+
+/**
  * @class
  * @extends Node
  */
@@ -1648,7 +1684,10 @@ var NineleapUtil = {
             url: NineleapUtil.createMyDataURL()
         });
         jsonp.onsuccess = function(data) {
-            callback(data);
+            callback(null, data);
+        };
+        jsonp.onerror = function(error) {
+            callback(error);
         };
         jsonp.send();
     },
@@ -1657,10 +1696,14 @@ var NineleapUtil = {
      *
      */
     postMyData: function(data, callback) {
+        if (!NineleapUtil.isOn9leap()) {
+            callback("not on 9leap.net");
+            return;
+        }
         var xhr = new Xhr({
             type: "POST",
             url: NineleapUtil.createURL("user_memory.json"),
-            data: JSON.stringify(data),
+            data: "json=" + JSON.stringify(data),
         });
         xhr.onsuccess = function() {
             callback(null);

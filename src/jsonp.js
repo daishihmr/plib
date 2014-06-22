@@ -22,7 +22,11 @@ Jsonp.prototype.send = function() {
     } else {
         this.script.src = this.param.url + "?callback=" + this.callbackName;
     }
-    window.document.body.appendChild(this.script);
+    try {
+        window.document.body.appendChild(this.script);
+    } catch (e) {
+        this.onerror(e);
+    }
 };
 /**
  *

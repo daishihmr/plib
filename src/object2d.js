@@ -63,6 +63,15 @@ Object2d.prototype.setPosition = function(x, y) {
 /**
  *
  */
+Object2d.prototype.setOrigin = function(x, y) {
+    this.originX = x;
+    this.originY = y;
+    return this;
+};
+
+/**
+ *
+ */
 Object2d.prototype.setScale = function(x, y) {
     if (arguments.length === 1) y = x;
     this.scaleX = x;

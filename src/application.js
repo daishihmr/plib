@@ -294,7 +294,7 @@ Application.prototype.update = function() {
     }
     this._beforeTouching = this._touching;
 
-    this.currentScene._update(this);
+    if (this.currentScene) this.currentScene._update(this);
 
     p.beforeX = p.x;
     p.beforeY = p.y;
@@ -354,11 +354,15 @@ Application.prototype.pushScene = function(scene) {
  */
 Application.prototype.popScene = function() {
     var scene = this.sceneStack.pop();
-    scene.onexit();
-    scene.app = null;
-    if (this.sceneStack.length > 0) {
-        this.currentScene = this.sceneStack[this.sceneStack.length - 1];
-        this.currentScene.onenter();
+    if (scene) {
+        scene.onexit();
+        scene.app = null;
+        if (this.sceneStack.length > 0) {
+            this.currentScene = this.sceneStack[this.sceneStack.length - 1];
+            this.currentScene.onenter();
+        } else {
+            this.currentScene = null;
+        }
     }
 };
 
