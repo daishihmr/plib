@@ -16,6 +16,7 @@ var Jsonp = function(param) {
  *
  */
 Jsonp.prototype.send = function() {
+    console.debug("jsonp send");
     this.script = window.document.createElement("script");
     if (this.param.data) {
         this.script.src = this.param.url + "?" + this.param.data + "&callback=" + this.callbackName;

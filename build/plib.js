@@ -797,8 +797,21 @@ var Xhr = function(param) {
             that.oncomplete(this);
         }
     };
-    xhr.open(param.type || "GET", param.url);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
+
+    var async = param.async;
+    if (async === undefined) {
+        async = true;
+    }
+
+    xhr.open(param.type || "GET", param.url, async);
+    if (param.withCredentials) {
+        xhr.withCredentials = param.withCredentials;
+    }
+    if (param.requestHeader) {
+        for (var name in param.requestHeader) if (param.requestHeader.hasOwnProperty(name)) {
+            xhr.setRequestHeader(name, param.requestHeader[name]);
+        }
+    }
     if (param.responseType) {
         xhr.responseType = param.responseType;
     }
@@ -807,6 +820,7 @@ var Xhr = function(param) {
  *
  */
 Xhr.prototype.send = function() {
+    console.debug("xhr send to " + this.param.url);
     if (this.param.data) {
         this.xhr.send(this.param.data);
     } else {
@@ -844,6 +858,7 @@ var Jsonp = function(param) {
  *
  */
 Jsonp.prototype.send = function() {
+    console.debug("jsonp send");
     this.script = window.document.createElement("script");
     if (this.param.data) {
         this.script.src = this.param.url + "?" + this.param.data + "&callback=" + this.callbackName;
@@ -1680,10 +1695,12 @@ var NineleapUtil = {
      *
      */
     getMyData: function(callback) {
+        console.debug("NineleapUtil.getMyData");
         var jsonp = new Jsonp({
             url: NineleapUtil.createMyDataURL()
         });
         jsonp.onsuccess = function(data) {
+            console.debug("NineleapUtil.getMyData success", data);
             callback(null, data);
         };
         jsonp.onerror = function(error) {
@@ -1704,12 +1721,19 @@ var NineleapUtil = {
             type: "POST",
             url: NineleapUtil.createURL("user_memory.json"),
             data: "json=" + JSON.stringify(data),
+            withCredentials: true,
+            requestHeader: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+            },
+            async: false,
         });
         xhr.onsuccess = function() {
-            callback(null);
+            if (callback) callback(null);
         };
         xhr.onerror = function(xhr) {
-            callback(new Error(xhr));
+            console.error("error at NineleapUtil.postMyData");
+            console.dir(xhr);
+            if (callback) callback(new Error(xhr));
         };
         xhr.send();
     },

@@ -47,10 +47,12 @@ var NineleapUtil = {
      *
      */
     getMyData: function(callback) {
+        console.debug("NineleapUtil.getMyData");
         var jsonp = new Jsonp({
             url: NineleapUtil.createMyDataURL()
         });
         jsonp.onsuccess = function(data) {
+            console.debug("NineleapUtil.getMyData success", data);
             callback(null, data);
         };
         jsonp.onerror = function(error) {
@@ -71,12 +73,19 @@ var NineleapUtil = {
             type: "POST",
             url: NineleapUtil.createURL("user_memory.json"),
             data: "json=" + JSON.stringify(data),
+            withCredentials: true,
+            requestHeader: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+            },
+            async: false,
         });
         xhr.onsuccess = function() {
-            callback(null);
+            if (callback) callback(null);
         };
         xhr.onerror = function(xhr) {
-            callback(new Error(xhr));
+            console.error("error at NineleapUtil.postMyData");
+            console.dir(xhr);
+            if (callback) callback(new Error(xhr));
         };
         xhr.send();
     },

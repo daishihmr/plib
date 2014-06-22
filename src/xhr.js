@@ -15,8 +15,21 @@ var Xhr = function(param) {
             that.oncomplete(this);
         }
     };
-    xhr.open(param.type || "GET", param.url);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
+
+    var async = param.async;
+    if (async === undefined) {
+        async = true;
+    }
+
+    xhr.open(param.type || "GET", param.url, async);
+    if (param.withCredentials) {
+        xhr.withCredentials = param.withCredentials;
+    }
+    if (param.requestHeader) {
+        for (var name in param.requestHeader) if (param.requestHeader.hasOwnProperty(name)) {
+            xhr.setRequestHeader(name, param.requestHeader[name]);
+        }
+    }
     if (param.responseType) {
         xhr.responseType = param.responseType;
     }
@@ -25,6 +38,7 @@ var Xhr = function(param) {
  *
  */
 Xhr.prototype.send = function() {
+    console.debug("xhr send to " + this.param.url);
     if (this.param.data) {
         this.xhr.send(this.param.data);
     } else {
