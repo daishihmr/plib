@@ -7,7 +7,7 @@ var Xhr = function(param) {
     var xhr = this.xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState === 4) {
-            if (this.status === 200) {
+            if (this.status === 200 || this.status === 201) {
                 that.onsuccess(this.response);
             } else {
                 that.onerror(this);

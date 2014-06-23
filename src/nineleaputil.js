@@ -65,10 +65,6 @@ var NineleapUtil = {
      *
      */
     postMyData: function(data, callback) {
-        if (!NineleapUtil.isOn9leap()) {
-            callback("not on 9leap.net");
-            return;
-        }
         var xhr = new Xhr({
             type: "POST",
             url: NineleapUtil.createURL("user_memory.json"),
@@ -83,11 +79,17 @@ var NineleapUtil = {
             if (callback) callback(null);
         };
         xhr.onerror = function(xhr) {
-            console.error("error at NineleapUtil.postMyData");
-            console.dir(xhr);
+            console.error("error at NineleapUtil.postMyData", xhr);
             if (callback) callback(new Error(xhr));
         };
         xhr.send();
+    },
+
+    /**
+     *
+     */
+    deleteMyData: function(callback) {
+        NineleapUtil.postMyData(null, callback);
     },
 
     /**
