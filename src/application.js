@@ -17,6 +17,7 @@ var Application = function(layerCount, mainLayerIndex) {
     window.document.body.appendChild(fill);
     fill.style.position = "absolute";
     fill.style.top = fill.style.left = 0;
+    fill.style.cursor = "default";
 
     /**
      *
@@ -308,6 +309,7 @@ Application.prototype.addNewLayer = function() {
     layer.style.position = "absolute";
     layer.width = SC_W;
     layer.height = SC_H;
+    layer.style.cursor = "default";
 
     this.layers.push(layer);
 };
