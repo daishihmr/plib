@@ -27,6 +27,7 @@ var PLIB_SOURCES = [
     "src/tweenaction.js",
     "src/canvas.js",
     "src/nineleaputil.js",
+    "src/loading.js",
 ];
 
 var BANNER = "/*\n\
