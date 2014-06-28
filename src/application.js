@@ -2,6 +2,8 @@
  * @class
  */
 var Application = function(layerCount, mainLayerIndex) {
+    document.body.style.background = "black";
+
     Application.INSTANCE = this;
 
     this.stats = null;
