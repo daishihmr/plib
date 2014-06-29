@@ -75,7 +75,8 @@ var NineleapUtil = {
             },
             async: false,
         });
-        xhr.onsuccess = function() {
+        xhr.onsuccess = function(xhr) {
+            console.info("postMyData success.");
             if (callback) callback(null);
         };
         xhr.onerror = function(xhr) {
