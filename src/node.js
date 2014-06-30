@@ -1,7 +1,10 @@
 /**
  * @class
+ * @extends EventDispatcher
  */
 var Node = function() {
+    EventDispatcher.call(this);
+
     /**
      *
      */
@@ -22,13 +25,17 @@ var Node = function() {
      */
     this.visible = true;
 };
+Node.prototype = Object.create(EventDispatcher.prototype);
+
+
 /**
  * @param {Node} child
  */
 Node.prototype.addChild = function(child) {
     child.parent = this;
     this.children.push(child);
-    child.onadded();
+    // child.onadded();
+    child.flare("added");
 };
 /**
  * @param {Node} parent
@@ -45,7 +52,8 @@ Node.prototype.removeChild = function(child) {
     if (idx >= 0) {
         child.parent = null;
         this.children.splice(idx, 1);
-        child.onremoved();
+        // child.onremoved();
+        child.flare("removed");
     }
 };
 /**

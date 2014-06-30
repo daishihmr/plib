@@ -330,7 +330,8 @@ Application.prototype.draw = function() {
 Application.prototype.replaceScene = function(scene) {
     if (this.currentScene) {
         this.currentScene.app = null;
-        this.currentScene.onexit();
+        // this.currentScene.onexit();
+        this.currentScene.flare("exit");
     }
 
     this.sceneStack.pop();
@@ -339,19 +340,22 @@ Application.prototype.replaceScene = function(scene) {
     this.currentScene = scene;
     this.currentScene.app = this;
 
-    this.currentScene.onenter();
+    // this.currentScene.onenter();
+    this.currentScene.flare("enter");
 };
 /**
  * @param {Scene} scene
  */
 Application.prototype.pushScene = function(scene) {
     if (this.sceneStack.length > 0) {
-        this.sceneStack[this.sceneStack.length - 1].onexit();
+        // this.sceneStack[this.sceneStack.length - 1].onexit();
+        this.sceneStack[this.sceneStack.length - 1].flare("exit");
     }
     this.sceneStack.push(scene);
     scene.app = this;
     this.currentScene = scene;
-    scene.onenter();
+    // scene.onenter();
+    scene.flare("enter");
 };
 /**
  *
@@ -359,11 +363,13 @@ Application.prototype.pushScene = function(scene) {
 Application.prototype.popScene = function() {
     var scene = this.sceneStack.pop();
     if (scene) {
-        scene.onexit();
+        // scene.onexit();
+        scene.flare("exit");
         scene.app = null;
         if (this.sceneStack.length > 0) {
             this.currentScene = this.sceneStack[this.sceneStack.length - 1];
-            this.currentScene.onenter();
+            // this.currentScene.onenter();
+            this.currentScene.flare("enter");
         } else {
             this.currentScene = null;
         }
