@@ -64,7 +64,107 @@ HTMLCanvasElement.prototype.getContext2d = function(v) {
 /**
  * @class
  */
+var Event = function(type, params) {
+    this.type = type;
+    this.params = params;
+};
+
+/**
+ * @class
+ */
+var EventDispatcher = function() {
+    this.listeners = {};
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.on = function(type, listener) {
+    if (this.listeners[type] === undefined) {
+        this.listeners[type] = [];
+    }
+
+    this.listeners[type].push(listener);
+
+    return this;
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.one = function(type, listener) {
+    var temp = function(event) {
+        listener.call(this, event);
+        this.off(type, temp);
+    };
+    this.on(type, temp);
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.off = function(type, listener) {
+    if (this.listeners[type] === undefined) {
+        this.listeners[type] = [];
+    }
+
+    var listeners = this.listeners[type];
+    var idx = listeners.indexOf(listener);
+    if (idx >= 0) {
+        listeners.splice(idx, 1);
+    }
+
+    if (this["on" + type]) {
+        delete this["on" + type];
+    }
+
+    return this;
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.clearEventListener = function(type) {
+    this.listeners[type] = [];
+    if (this["on" + type]) {
+        delete this["on" + type];
+    }
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.fire = function(event) {
+    if (this["on" + event.type]) {
+        this["on" + event.type](event);
+    }
+
+    var listeners = this.listeners[event.type];
+    if (listeners !== undefined) {
+        var copied = [].concat(listeners);
+        for (var i = 0, len = copied.length; i < len; i++) {
+            copied[i].call(this, event);
+        }
+    }
+
+    return this;
+};
+
+/**
+ *
+ */
+EventDispatcher.prototype.flare = function(type) {
+    return this.fire(new Event(type));
+};
+
+/**
+ * @class
+ */
 var Application = function(layerCount, mainLayerIndex) {
+    document.body.style.background = "black";
+
+    throw "test";
+
     Application.INSTANCE = this;
 
     this.stats = null;
@@ -391,7 +491,8 @@ Application.prototype.draw = function() {
 Application.prototype.replaceScene = function(scene) {
     if (this.currentScene) {
         this.currentScene.app = null;
-        this.currentScene.onexit();
+        // this.currentScene.onexit();
+        this.currentScene.flare("exit");
     }
 
     this.sceneStack.pop();
@@ -400,19 +501,22 @@ Application.prototype.replaceScene = function(scene) {
     this.currentScene = scene;
     this.currentScene.app = this;
 
-    this.currentScene.onenter();
+    // this.currentScene.onenter();
+    this.currentScene.flare("enter");
 };
 /**
  * @param {Scene} scene
  */
 Application.prototype.pushScene = function(scene) {
     if (this.sceneStack.length > 0) {
-        this.sceneStack[this.sceneStack.length - 1].onexit();
+        // this.sceneStack[this.sceneStack.length - 1].onexit();
+        this.sceneStack[this.sceneStack.length - 1].flare("exit");
     }
     this.sceneStack.push(scene);
     scene.app = this;
     this.currentScene = scene;
-    scene.onenter();
+    // scene.onenter();
+    scene.flare("enter");
 };
 /**
  *
@@ -420,11 +524,13 @@ Application.prototype.pushScene = function(scene) {
 Application.prototype.popScene = function() {
     var scene = this.sceneStack.pop();
     if (scene) {
-        scene.onexit();
+        // scene.onexit();
+        scene.flare("exit");
         scene.app = null;
         if (this.sceneStack.length > 0) {
             this.currentScene = this.sceneStack[this.sceneStack.length - 1];
-            this.currentScene.onenter();
+            // this.currentScene.onenter();
+            this.currentScene.flare("enter");
         } else {
             this.currentScene = null;
         }
@@ -435,8 +541,11 @@ Application.INSTANCE = null;
 
 /**
  * @class
+ * @extends EventDispatcher
  */
 var Node = function() {
+    EventDispatcher.call(this);
+
     /**
      *
      */
@@ -457,13 +566,17 @@ var Node = function() {
      */
     this.visible = true;
 };
+Node.prototype = Object.create(EventDispatcher.prototype);
+
+
 /**
  * @param {Node} child
  */
 Node.prototype.addChild = function(child) {
     child.parent = this;
     this.children.push(child);
-    child.onadded();
+    // child.onadded();
+    child.flare("added");
 };
 /**
  * @param {Node} parent
@@ -480,7 +593,8 @@ Node.prototype.removeChild = function(child) {
     if (idx >= 0) {
         child.parent = null;
         this.children.splice(idx, 1);
-        child.onremoved();
+        // child.onremoved();
+        child.flare("removed");
     }
 };
 /**
@@ -1725,7 +1839,8 @@ var NineleapUtil = {
             },
             async: false,
         });
-        xhr.onsuccess = function() {
+        xhr.onsuccess = function(xhr) {
+            console.info("postMyData success.");
             if (callback) callback(null);
         };
         xhr.onerror = function(xhr) {
@@ -1828,3 +1943,70 @@ Loading.prototype.update = function(app) {
     this.bg.rotation += 0.03;
     this.scaleX = this.scaleY = 1.0 + Math.sin(app.frame * 0.1) * 0.2;
 };
+
+/**
+ * @class
+ * @extends Node
+ */
+var Explosion = function(x, y, size) {
+    Node.call(this);
+    this.x = x;
+    this.y = y;
+    this.dirCount = 5;
+    this.spdRate = size || 1;
+    this.particleClass = ExplosionPerticle;
+};
+Explosion.prototype = Object.create(Node.prototype);
+Explosion.prototype.update = function() {
+    if (this.children.length === 0) this.remove();
+}
+Explosion.prototype.onadded = function() {
+    for (var i = 0; i < this.dirCount; i++) {
+        var v = Explosion.VEL[parseInt(Math.random() * Explosion.VEL.length)];
+        var s = this.speed();
+        for (var j = 0; j < 5; j++) {
+            var p = new this.particleClass();
+            if (p) {
+                p.x = this.x;
+                p.y = this.y;
+                p.scaleX = p.scaleY = 1 + (5-j)*0.2;
+                p.vx = v.x * (1+j)*s;
+                p.vy = v.y * (1+j)*s;
+                p.addChildTo(this);
+            }
+        }
+    }
+};
+Explosion.prototype.speed = function() {
+    return 0.8 + Math.random() * 1.2 * this.spdRate;
+};
+Explosion.VEL = Util.range(0, 16).map(function(v) {
+    return {
+        x: Math.cos(Math.PI*2 * v/16),
+        y: Math.sin(Math.PI*2 * v/16)
+    };
+});
+Explosion.addTarget = null;
+
+/**
+ *
+ */
+var ExplosionPerticle = function() {
+    Sprite.call(this, ExplosionPerticle.TEXTURE);
+    this.alpha = 0.5;
+    this.vx = 0;
+    this.vy = 0;
+};
+ExplosionPerticle.prototype = Object.create(Sprite.prototype);
+ExplosionPerticle.prototype.update = function() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vx *= 0.95;
+    this.vy *= 0.95;
+    this.alpha -= 0.01;
+    if (this.alpha < 0) this.remove();
+};
+ExplosionPerticle.TEXTURE = (function() {
+    return new Rect(10, 20, 20).texture;
+})();
+

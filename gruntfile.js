@@ -1,5 +1,6 @@
 var PLIB_SOURCES = [
     "src/_pre.js",
+    "src/event.js",
     "src/application.js",
     "src/node.js",
     "src/object2d.js",
@@ -28,6 +29,7 @@ var PLIB_SOURCES = [
     "src/canvas.js",
     "src/nineleaputil.js",
     "src/loading.js",
+    "src/explosion.js",
 ];
 
 var BANNER = "/*\n\
@@ -76,17 +78,18 @@ module.exports = function(grunt) {
         uglify: {
             dist: {
                 options: {
-                    banner: BANNER
+                    banner: BANNER,
+                    sourceMap: true
                 },
                 files: {
-                    "build/plib.min.js": ["build/plib.js"]
+                    "build/plib.min.js": PLIB_SOURCES
                 }
             }
         },
         watch: {
             scripts: {
                 files: ["src/**/*.js"],
-                tasks: ["concat"]
+                tasks: ["uglify"]
             }
         }
     });
