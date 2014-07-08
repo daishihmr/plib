@@ -73,6 +73,12 @@ Node.prototype._update = function(app) {
     for (var i = 0, len = copied.length; i < len; i++) {
         copied[i]._update(app);
     }
+
+    var ev = new Event("enterframe", {
+        frame: this.frame
+    });
+    this.fire(ev);
+
     this.frame += 1;
 };
 /**
