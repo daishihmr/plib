@@ -161,7 +161,7 @@ EventDispatcher.prototype.flare = function(type) {
  * @class
  */
 var Application = function(layerCount, mainLayerIndex) {
-    document.body.style.background = "black";
+    window.document.body.style.background = "black";
 
     Application.INSTANCE = this;
 
@@ -395,6 +395,8 @@ var Application = function(layerCount, mainLayerIndex) {
     }.bind(this), false);
 
     this.frame = 0;
+    this.slowRate = 1.0;
+    this.slowRateAdded = 0;
 
     /**
      * @type Scene
@@ -428,6 +430,11 @@ Application.prototype.end = function() {
  *
  */
 Application.prototype.update = function() {
+    this.slowRateAdded += this.slowRate;
+    if (this.slowRateAdded < 1.0) return;
+
+    this.slowRateAdded -= 1.0;
+
     var p = this.pointing;
     if (!this._beforeTouching && this._touching) {
         p.isStart = true;
@@ -612,6 +619,12 @@ Node.prototype._update = function(app) {
     for (var i = 0, len = copied.length; i < len; i++) {
         copied[i]._update(app);
     }
+
+    var ev = new Event("enterframe", {
+        frame: this.frame
+    });
+    this.fire(ev);
+
     this.frame += 1;
 };
 /**
