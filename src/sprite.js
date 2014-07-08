@@ -45,3 +45,11 @@ Sprite.prototype.isHitPoint = function(point) {
     var h = (this.height*this.scaleY)*0.5;
     return this.x - w <= point.x && point.x < this.x + w && this.y - h <= point.y && point.y < this.y + h;
 };
+
+/**
+ *
+ */
+Sprite.prototype.setAlpha = function(alpha) {
+    this.alpha = alpha;
+    return this;
+};

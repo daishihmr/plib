@@ -12,6 +12,7 @@ var Label = function(text, fontSize, color) {
 
     this._text = text;
     this._fontSize = fontSize || 24;
+    this._fontFamily = Label.DEFAULT_FONT;
     this.setColor(color || 0);
 
     var texture = this.updateText();
@@ -22,14 +23,20 @@ Label.prototype = Object.create(Sprite.prototype, {
         get: function() { return this._text },
         set: function(v) {
             this.setText(v);
-        }
+        },
     },
     fontSize: {
         get: function() { return this._fontSize },
         set: function(v) {
             this.setFontSize(v);
-        }
-    }
+        },
+    },
+    fontFamily: {
+        get: function() { return this._fontFamily },
+        set: function(v) {
+            this.setFontFamily(v);
+        },
+    },
 });
 /**
  *
@@ -59,17 +66,26 @@ Label.prototype.setFontSize = function(fontSize) {
 /**
  *
  */
+Label.prototype.setFontFamily = function(fontSize) {
+    this._fontFamily = fontFamily;
+    this.texture = this.updateText();
+    this.width = this.texture.width;
+    this.height = this.texture.height;
+};
+/**
+ *
+ */
 Label.prototype.updateText = function() {
     var c = window.document.createElement("canvas");
     var ctx = c.getContext2d(true);
 
-    ctx.font = "" + this._fontSize + "px 'uni'";
+    ctx.font = "" + this._fontSize + "px '" + this._fontFamily + "'";
 
     var metrics = ctx.measureText(this._text);
     c.width = metrics.width + 5;
     c.height = this._fontSize;
 
-    ctx.font = "" + this._fontSize + "px 'uni'";
+    ctx.font = "" + this._fontSize + "px '" + this._fontFamily + "'";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = this.fillStyle;
@@ -81,3 +97,5 @@ Label.prototype.updateText = function() {
 
     return c;
 };
+
+Label.DEFAULT_FONT = "sans-serif";

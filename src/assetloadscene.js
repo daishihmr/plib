@@ -7,7 +7,7 @@ var Assets = {};
  * @class
  * @extends Scene
  * @param {Object.<String, String>} assets
- * @param {Scene} nextScene
+ * @param {Scene|function} nextScene
  */
 var AssetLoadScene = function(assets, nextScene) {
     Scene.call(this);
@@ -22,6 +22,9 @@ var AssetLoadScene = function(assets, nextScene) {
             case ".mp3":
                 this._loadAudio(name, assets[name]);
                 break;
+            case ".ttf":
+                this._loadFont(name, assets[name]);
+                break;
             }
         }
         this.allCount += 1;
@@ -29,13 +32,9 @@ var AssetLoadScene = function(assets, nextScene) {
     this.loadedCount = 0;
 
     new Loading().addChildTo(this);
-
-    // var label = this.label = new Label("ロード中...", 20, 240);
-    // label.x = SC_W*0.5;
-    // label.y = SC_H*0.5;
-    // label.addChildTo(this);
 };
 AssetLoadScene.prototype = Object.create(Scene.prototype);
+
 /**
  * @private
  */
@@ -54,9 +53,48 @@ AssetLoadScene.prototype._loadAudio = function(assetName, url) {
     }.bind(this);
     xhr.send();
 };
+
+
+/**
+ * @private
+ */
+AssetLoadScene.prototype._loadFont = function(assetName, url) {
+    var styleElm = window.document.createElement("style");
+    styleElm.textContent = "@font-face {\n\
+    font-family: '" + assetName + "';\n\
+    src: url(" + url + ");\n\
+}\n";
+    window.document.head.appendChild(styleElm);
+
+    var tester = window.document.createElement("span");
+    tester.style.fontFamily = "'" + assetName + "', 'monospace'";
+    tester.innerHTML = "QW@HhsXJ";
+    window.document.body.appendChild(tester);
+
+    var before = tester.offsetWidth;
+    console.debug("_loadFont(" + url + ") before:" + before);
+    var timeout = 3000;
+
+    var that = this;
+    var checkLoadFont = function() {
+        timeout -= 1;
+        if (tester.offsetWidth !== before || timeout < 0) {
+            console.debug("_loadFont(" + url + ") after:" + tester.offsetWidth);
+            window.document.body.removeChild(tester);
+            that.loadedCount += 1;
+        } else {
+            window.setTimeout(checkLoadFont, 100);
+        }
+    };
+    checkLoadFont();
+};
+
 AssetLoadScene.prototype.update = function(app) {
-    // this.label.scaleX = this.label.scaleY = 1.0 + Math.sin(app.frame*0.1) * 0.2
     if (this.loadedCount === this.allCount) {
-        app.replaceScene(this.nextScene);
+        if (typeof(this.nextScene) === "function") {
+            app.replaceScene(new this.nextScene());
+        } else {
+            app.replaceScene(this.nextScene);
+        }
     }
 };
