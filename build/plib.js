@@ -614,7 +614,8 @@ Node.prototype.remove = function() {
  * @param {Application} app
  */
 Node.prototype._update = function(app) {
-    this.update(app);
+    if (this.update(app) === true) return;
+
     var copied = [].concat(this.children);
     for (var i = 0, len = copied.length; i < len; i++) {
         copied[i]._update(app);
