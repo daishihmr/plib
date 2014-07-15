@@ -262,9 +262,10 @@ var Application = function(layerCount, mainLayerIndex) {
         down: false,
         left: false,
         right: false,
+        c: false,
         z: false,
         x: false,
-        angles: {
+        vectors: {
         //  durl
               10: { x: Math.cos(Math.PI * 0.00), y: Math.sin(Math.PI * 0.00) },
             1010: { x: Math.cos(Math.PI * 0.25), y: Math.sin(Math.PI * 0.25) },
@@ -275,9 +276,23 @@ var Application = function(layerCount, mainLayerIndex) {
              100: { x: Math.cos(Math.PI * 1.50), y: Math.sin(Math.PI * 1.50) },
              110: { x: Math.cos(Math.PI * 1.75), y: Math.sin(Math.PI * 1.75) },
         },
+        angles: {
+        //  durl
+              10: Math.PI * 0.00,
+            1010: Math.PI * 0.25,
+            1000: Math.PI * 0.50,
+            1001: Math.PI * 0.75,
+               1: Math.PI * 1.00,
+             101: Math.PI * 1.25,
+             100: Math.PI * 1.50,
+             110: Math.PI * 1.75,
+        },
+        vector: function() {
+            return this.vectors[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || { x:0, y:0 };
+        },
         angle: function() {
-            return this.angles[1000*this.down + 100*this.up + 10*this.right + 1*this.left];
-        }
+            return this.angles[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || null;
+        },
     };
 
     this._beforeTouching = false;
@@ -350,18 +365,26 @@ var Application = function(layerCount, mainLayerIndex) {
     }.bind(this), true);
 
     window.addEventListener("keydown", function(e) {
+        var stopEvent = false;
         switch (e.keyCode) {
         case 38:
             this.keyboard.up = true;
+            stopEvent = true;
             break;
         case 37:
             this.keyboard.left = true;
+            stopEvent = true;
             break;
         case 39:
             this.keyboard.right = true;
+            stopEvent = true;
             break;
         case 40:
             this.keyboard.down = true;
+            stopEvent = true;
+            break;
+        case 67:
+            this.keyboard.c = true;
             break;
         case 88:
             this.keyboard.x = true;
@@ -370,20 +393,33 @@ var Application = function(layerCount, mainLayerIndex) {
             this.keyboard.z = true;
             break;
         }
+
+        if (stopEvent) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
     }.bind(this), false);
     window.addEventListener("keyup", function(e) {
+        var stopEvent = false;
         switch (e.keyCode) {
         case 38:
             this.keyboard.up = false;
+            stopEvent = true;
             break;
         case 37:
             this.keyboard.left = false;
+            stopEvent = true;
             break;
         case 39:
             this.keyboard.right = false;
+            stopEvent = true;
             break;
         case 40:
             this.keyboard.down = false;
+            stopEvent = true;
+            break;
+        case 67:
+            this.keyboard.c = false;
             break;
         case 88:
             this.keyboard.x = false;
@@ -391,6 +427,11 @@ var Application = function(layerCount, mainLayerIndex) {
         case 90:
             this.keyboard.z = false;
             break;
+        }
+
+        if (stopEvent) {
+            e.stopPropagation();
+            e.preventDefault();
         }
     }.bind(this), false);
 
@@ -465,7 +506,8 @@ Application.prototype.update = function() {
 
     if (this.currentScene) {
         var enterframeEvent = new Event("enterframe", {
-            frame: this.frame
+            frame: this.frame,
+            app: this,
         });
         Object.freeze(enterframeEvent);
         this.currentScene._update(this, enterframeEvent);
@@ -625,7 +667,7 @@ Node.prototype._update = function(app, enterframeEvent) {
 
     var copied = [].concat(this.children);
     for (var i = 0, len = copied.length; i < len; i++) {
-        copied[i]._update(app);
+        copied[i]._update(app, enterframeEvent);
     }
 
     this.fire(enterframeEvent);
@@ -1564,6 +1606,26 @@ Map.join2DArray = function(a, b, horizontal) {
     } else {
         a = a.concat(b);
     }
+};
+
+/**
+ * @class
+ */
+var GlowEffect = function(sprite, scale, radius) {
+    scale = scale || 2;
+    radius = radius || 10;
+
+    var canvas = new Canvas(sprite.width * scale, sprite.height * scale);
+    canvas.drawImage(sprite.texture, sprite.width * (scale - 1) * 0.5, sprite.height * (scale - 1) * 0.5);
+    canvas.stackBlur(radius);
+
+    Sprite.call(this, canvas.toTexture());
+};
+GlowEffect.prototype = Object.create(Sprite.prototype);
+
+Sprite.prototype.glow = function(scale, radius) {
+    this.glowEffect = new GlowEffect(this, scale, radius).addChildTo(this);
+    return this;
 };
 
 /**

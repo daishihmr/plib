@@ -73,7 +73,7 @@ Node.prototype._update = function(app, enterframeEvent) {
 
     var copied = [].concat(this.children);
     for (var i = 0, len = copied.length; i < len; i++) {
-        copied[i]._update(app);
+        copied[i]._update(app, enterframeEvent);
     }
 
     this.fire(enterframeEvent);

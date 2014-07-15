@@ -21,6 +21,7 @@ var PLIB_SOURCES = [
     "src/fighter.js",
     "src/label.js",
     "src/map.js",
+    "src/gloweffect.js",
     "src/util.js",
     "src/http.js",
     "src/tweener.js",
