@@ -304,7 +304,13 @@ Application.prototype.update = function() {
     }
     this._beforeTouching = this._touching;
 
-    if (this.currentScene) this.currentScene._update(this);
+    if (this.currentScene) {
+        var enterframeEvent = new Event("enterframe", {
+            frame: this.frame
+        });
+        Object.freeze(enterframeEvent);
+        this.currentScene._update(this, enterframeEvent);
+    }
 
     p.beforeX = p.x;
     p.beforeY = p.y;

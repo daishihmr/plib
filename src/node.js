@@ -66,8 +66,9 @@ Node.prototype.remove = function() {
 /**
  * @private
  * @param {Application} app
+ * @param {Event} enterframeEvent
  */
-Node.prototype._update = function(app) {
+Node.prototype._update = function(app, enterframeEvent) {
     if (this.update(app) === true) return;
 
     var copied = [].concat(this.children);
@@ -75,10 +76,7 @@ Node.prototype._update = function(app) {
         copied[i]._update(app);
     }
 
-    var ev = new Event("enterframe", {
-        frame: this.frame
-    });
-    this.fire(ev);
+    this.fire(enterframeEvent);
 
     this.frame += 1;
 };
