@@ -21,6 +21,7 @@ var Loading = function() {
         new Rect(i * 30, 20, 20)
             .setPosition(Math.cos(r) * 50, Math.sin(r) * 50)
             .addChildTo(this.bg)
+            .glow()
             .update = function() {
                 this.rotation += 0.1;
             };

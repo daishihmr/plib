@@ -1611,20 +1611,23 @@ Map.join2DArray = function(a, b, horizontal) {
 /**
  * @class
  */
-var GlowEffect = function(sprite, scale, radius) {
-    scale = scale || 2;
-    radius = radius || 10;
+var GlowEffect = function(sprite, radius, scale, alpha) {
+    radius = radius || 20;
+    scale = scale || 1.2;
+    alpha = alpha || 1;
 
-    var canvas = new Canvas(sprite.width * scale, sprite.height * scale);
-    canvas.drawImage(sprite.texture, sprite.width * (scale - 1) * 0.5, sprite.height * (scale - 1) * 0.5);
+    var canvas = new Canvas(sprite.width * scale * 2, sprite.height * scale * 2);
+    canvas.drawImage(sprite.texture, sprite.width * scale * 0.5, sprite.height * scale * 0.5, sprite.width * scale, sprite.height * scale);
     canvas.stackBlur(radius);
 
     Sprite.call(this, canvas.toTexture());
+
+    this.alpha = alpha;
 };
 GlowEffect.prototype = Object.create(Sprite.prototype);
 
-Sprite.prototype.glow = function(scale, radius) {
-    this.glowEffect = new GlowEffect(this, scale, radius).addChildTo(this);
+Sprite.prototype.glow = function(radius, scale, alpha) {
+    this.glowEffect = new GlowEffect(this, radius, scale, alpha).addChildTo(this);
     return this;
 };
 
@@ -2502,7 +2505,8 @@ var Loading = function() {
             .addChildTo(this.bg)
             .update = function() {
                 this.rotation += 0.1;
-            };
+            }
+            .glow();
 
         r += Math.PI * 2 / 12;
     }
