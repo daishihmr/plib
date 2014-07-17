@@ -24,7 +24,7 @@ SoundEngine.playSE = function(name) {
 
         SoundEngine.playing[name] = Application.INSTANCE.frame;
         var se = Assets[name].clone();
-        se.volume = OptionSettings.seVolume;
+        se.volume = SoundEngine.seVolume;
         se.start();
     }
 };
@@ -40,7 +40,7 @@ SoundEngine.startBgm = function(name) {
         SoundEngine.bgmName = name;
         SoundEngine.bgm = Assets[name].clone();
         SoundEngine.bgm.loop = true;
-        SoundEngine.bgm.volume = OptionSettings.bgmVolume;
+        SoundEngine.bgm.volume = SoundEngine.bgmVolume;
         SoundEngine.bgm.start();
     }
 };

@@ -95,6 +95,29 @@ var Application = function(layerCount, mainLayerIndex) {
         deltaY: 0,
     };
 
+    var VECTORS = {
+    //  durl
+          10: { x: Math.cos(Math.PI * 0.00), y: Math.sin(Math.PI * 0.00) },
+        1010: { x: Math.cos(Math.PI * 0.25), y: Math.sin(Math.PI * 0.25) },
+        1000: { x: Math.cos(Math.PI * 0.50), y: Math.sin(Math.PI * 0.50) },
+        1001: { x: Math.cos(Math.PI * 0.75), y: Math.sin(Math.PI * 0.75) },
+           1: { x: Math.cos(Math.PI * 1.00), y: Math.sin(Math.PI * 1.00) },
+         101: { x: Math.cos(Math.PI * 1.25), y: Math.sin(Math.PI * 1.25) },
+         100: { x: Math.cos(Math.PI * 1.50), y: Math.sin(Math.PI * 1.50) },
+         110: { x: Math.cos(Math.PI * 1.75), y: Math.sin(Math.PI * 1.75) },
+    };
+    var ANGLES = {
+    //  durl
+          10: Math.PI * 0.00,
+        1010: Math.PI * 0.25,
+        1000: Math.PI * 0.50,
+        1001: Math.PI * 0.75,
+           1: Math.PI * 1.00,
+         101: Math.PI * 1.25,
+         100: Math.PI * 1.50,
+         110: Math.PI * 1.75,
+    };
+
     /**
      *
      */
@@ -106,33 +129,11 @@ var Application = function(layerCount, mainLayerIndex) {
         c: false,
         z: false,
         x: false,
-        vectors: {
-        //  durl
-              10: { x: Math.cos(Math.PI * 0.00), y: Math.sin(Math.PI * 0.00) },
-            1010: { x: Math.cos(Math.PI * 0.25), y: Math.sin(Math.PI * 0.25) },
-            1000: { x: Math.cos(Math.PI * 0.50), y: Math.sin(Math.PI * 0.50) },
-            1001: { x: Math.cos(Math.PI * 0.75), y: Math.sin(Math.PI * 0.75) },
-               1: { x: Math.cos(Math.PI * 1.00), y: Math.sin(Math.PI * 1.00) },
-             101: { x: Math.cos(Math.PI * 1.25), y: Math.sin(Math.PI * 1.25) },
-             100: { x: Math.cos(Math.PI * 1.50), y: Math.sin(Math.PI * 1.50) },
-             110: { x: Math.cos(Math.PI * 1.75), y: Math.sin(Math.PI * 1.75) },
-        },
-        angles: {
-        //  durl
-              10: Math.PI * 0.00,
-            1010: Math.PI * 0.25,
-            1000: Math.PI * 0.50,
-            1001: Math.PI * 0.75,
-               1: Math.PI * 1.00,
-             101: Math.PI * 1.25,
-             100: Math.PI * 1.50,
-             110: Math.PI * 1.75,
-        },
         vector: function() {
-            return this.vectors[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || { x:0, y:0 };
+            return VECTORS[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || { x:0, y:0 };
         },
         angle: function() {
-            return this.angles[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || null;
+            return ANGLES[1000*this.down + 100*this.up + 10*this.right + 1*this.left] || null;
         },
     };
 
@@ -328,20 +329,20 @@ Application.prototype.update = function() {
         p.isStart = false;
         p.isPointing = true;
         p.isEnd = false;
-        p.deltaX = p.x - p.beforeX;
-        p.deltaY = p.y - p.beforeY;
+        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
+        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
     } else if (this._beforeTouching && !this._touching) {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = true;
-        p.deltaX = p.x - p.beforeX;
-        p.deltaY = p.y - p.beforeY;
+        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
+        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
     } else {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = false;
-        p.deltaX = p.x - p.beforeX;
-        p.deltaY = p.y - p.beforeY;
+        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
+        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
     }
     this._beforeTouching = this._touching;
 
