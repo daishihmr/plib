@@ -329,20 +329,20 @@ Application.prototype.update = function() {
         p.isStart = false;
         p.isPointing = true;
         p.isEnd = false;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 100) / 100;
+        p.deltaY = ~~((p.y - p.beforeY) * 100) / 100;
     } else if (this._beforeTouching && !this._touching) {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = true;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 100) / 100;
+        p.deltaY = ~~((p.y - p.beforeY) * 100) / 100;
     } else {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = false;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 100) / 100;
+        p.deltaY = ~~((p.y - p.beforeY) * 100) / 100;
     }
     this._beforeTouching = this._touching;
 
