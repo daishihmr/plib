@@ -450,15 +450,21 @@ var Application = function(layerCount, mainLayerIndex) {
      */
     this.sceneStack = [ this.currentScene ];
 
+    var sec = 1000 / 60;
+
+    var process = function() {
+        this.update();
+        this.frame += 1;
+        window.setTimeout(process, 1000 / 60);
+    }.bind(this);
+    process();
+
     var render = function() {
         if (this.stats !== null) this.stats.update();
-
-        this.update();
         this.draw();
-        this.frame += 1;
         window.requestAnimationFrame(render);
     }.bind(this);
-    window.requestAnimationFrame(render);
+    render();
 };
 
 /**
@@ -488,20 +494,20 @@ Application.prototype.update = function() {
         p.isStart = false;
         p.isPointing = true;
         p.isEnd = false;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 10) / 10;
+        p.deltaY = ~~((p.y - p.beforeY) * 10) / 10;
     } else if (this._beforeTouching && !this._touching) {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = true;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 10) / 10;
+        p.deltaY = ~~((p.y - p.beforeY) * 10) / 10;
     } else {
         p.isStart = false;
         p.isPointing = false;
         p.isEnd = false;
-        p.deltaX = ~~((p.x - p.beforeX) * 10000) / 10000;
-        p.deltaY = ~~((p.y - p.beforeY) * 10000) / 10000;
+        p.deltaX = ~~((p.x - p.beforeX) * 10) / 10;
+        p.deltaY = ~~((p.y - p.beforeY) * 10) / 10;
     }
     this._beforeTouching = this._touching;
 
