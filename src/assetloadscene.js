@@ -15,15 +15,27 @@ var AssetLoadScene = function(assets, nextScene) {
     this.nextScene = nextScene;
 
     this.allCount = 0;
-    for (var name in assets) if (assets.hasOwnProperty(name)) {
-        var ext = assets[name].match(/\.\w+/);
-        if (ext) {
-            switch (ext[0]) {
-            case ".mp3":
-                this._loadAudio(name, assets[name]);
-                break;
-            case ".ttf":
-                this._loadFont(name, assets[name]);
+    for (var key in assets) if (assets.hasOwnProperty(key)) {
+        var asset = assets[key];
+        if (typeof asset === "string") {
+            var ext = asset.match(/\.\w+/);
+            if (ext) {
+                switch (ext[0]) {
+                case ".mp3":
+                    this._loadAudio(key, asset);
+                    break;
+                case ".ttf":
+                    this._loadFont(key, asset);
+                    break;
+                case ".ttf":
+                    this._loadFont(key, asset);
+                    break;
+                }
+            }
+        } else {
+            switch (asset.type) {
+            case "sound":
+                this._loadJsAudio(key, asset.name);
                 break;
             }
         }
@@ -52,6 +64,25 @@ AssetLoadScene.prototype._loadAudio = function(assetName, url) {
         };
     }.bind(this);
     xhr.send();
+};
+/**
+ * @private
+ */
+AssetLoadScene.prototype._loadJsAudio = function(assetName, name) {
+    var binaryString = window.atob(BINARY_ASSETS[name]);
+    var len = binaryString.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        var ascii = binaryString.charCodeAt(i);
+        bytes[i] = ascii;
+    }
+
+    var audio = new Sound(bytes.buffer);
+    var that = this;
+    audio.onload = function() {
+        Assets[assetName] = this;
+        that.loadedCount += 1;
+    };
 };
 
 

@@ -27,6 +27,8 @@ var Sound = function(data) {
             this.gainNode.connect(Sound.CONTEXT.destination);
 
             this.onload();
+        } else {
+            throw new Error("invalid data.");
         }
     } else {
         throw new Error("webkitAudioContext is not defined.");

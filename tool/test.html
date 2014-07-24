@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<script src="test.js"></script>
+<script src="../src/sound.js"></script>
+<script>
+window.onload = function() {
+    var s = window.atob(BINARY_ASSETS["bgm"]);
+    var len = s.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        var ascii = s.charCodeAt(i);
+        bytes[i] = ascii;
+    }
+
+    var sound = new Sound(bytes.buffer);
+    sound.onload = function() {
+        sound.play();
+    };
+};
+</script>
+</body>
+</html>
