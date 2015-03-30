@@ -17,7 +17,9 @@ var Sound = function(data) {
                 this.gainNode.connect(Sound.CONTEXT.destination);
 
                 this.onload();
-            }.bind(this));
+            }.bind(this), function(error) {
+                this.onloadfailed();
+            });
         } else if (data instanceof AudioBuffer) {
             this.buffer = data;
             this.source = Sound.CONTEXT.createBufferSource();
@@ -54,6 +56,7 @@ Sound.prototype = Object.create(Object.prototype, {
 });
 
 Sound.prototype.onload = function() {};
+Sound.prototype.onloadfailed = function() {};
 /**
  *
  */
@@ -92,10 +95,10 @@ Sound.prototype.clone = function() {
  *
  */
 Sound.CONTEXT = null;
-if (window.webkitAudioContext) {
-    Sound.CONTEXT = new webkitAudioContext();
+if (window.AudioContext) {
+    Sound.CONTEXT = new AudioContext();
 } else if (window.mozAudioContext) {
     Sound.CONTEXT = new mozAudioContext();
-} else if (window.AudioContext) {
-    Sound.CONTEXT = new AudioContext();
+} else if (window.webkitAudioContext) {
+    Sound.CONTEXT = new webkitAudioContext();
 }

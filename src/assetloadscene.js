@@ -62,6 +62,9 @@ AssetLoadScene.prototype._loadAudio = function(assetName, url) {
             Assets[assetName] = this;
             that.loadedCount += 1;
         };
+        audio.onloadfailed = function() {
+            that.loadedCount += 1;
+        };
     }.bind(this);
     xhr.send();
 };
@@ -81,6 +84,9 @@ AssetLoadScene.prototype._loadJsAudio = function(assetName, name) {
     var that = this;
     audio.onload = function() {
         Assets[assetName] = this;
+        that.loadedCount += 1;
+    };
+    audio.onloadfailed = function() {
         that.loadedCount += 1;
     };
 };
