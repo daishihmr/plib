@@ -28,3 +28,7 @@ Layer.prototype._draw = function() {
     }
     this.context.restore();
 };
+
+Layer.prototype.clear = function() {
+    this.context.clearRect(0, 0, SC_W, SC_H);
+};
