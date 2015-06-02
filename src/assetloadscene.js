@@ -16,6 +16,7 @@ var AssetLoadScene = function(assets, nextScene) {
 
     this.allCount = 0;
     for (var key in assets) if (assets.hasOwnProperty(key)) {
+        console.log("load " + key);
         var asset = assets[key];
         if (typeof asset === "string") {
             var ext = asset.match(/\.\w+/);
@@ -57,14 +58,20 @@ AssetLoadScene.prototype._loadAudio = function(assetName, url) {
         responseType: "arraybuffer"
     });
     xhr.onsuccess = function(response) {
+        console.log("xhr success");
+
         var audio = new Sound(response);
         var that = this;
         audio.onload = function() {
             Assets[assetName] = this;
             that.loadedCount += 1;
+
+            console.log("loaded " + assetName + " from " + url);
         };
         audio.onloadfailed = function() {
             that.loadedCount += 1;
+
+            console.log("load failed " + assetName + " from " + url);
         };
     }.bind(this);
     xhr.send();

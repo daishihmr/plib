@@ -30,9 +30,11 @@ var Sound = function(data) {
 
             this.onload();
         } else {
+            console.error("invalid data.");
             throw new Error("invalid data.");
         }
     } else {
+        console.error("webkitAudioContext is not defined.")
         throw new Error("webkitAudioContext is not defined.");
     }
 };

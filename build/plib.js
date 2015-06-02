@@ -913,6 +913,7 @@ var AssetLoadScene = function(assets, nextScene) {
 
     this.allCount = 0;
     for (var key in assets) if (assets.hasOwnProperty(key)) {
+        console.log("load " + key);
         var asset = assets[key];
         if (typeof asset === "string") {
             var ext = asset.match(/\.\w+/);
@@ -954,14 +955,20 @@ AssetLoadScene.prototype._loadAudio = function(assetName, url) {
         responseType: "arraybuffer"
     });
     xhr.onsuccess = function(response) {
+        console.log("xhr success");
+
         var audio = new Sound(response);
         var that = this;
         audio.onload = function() {
             Assets[assetName] = this;
             that.loadedCount += 1;
+
+            console.log("loaded " + assetName + " from " + url);
         };
         audio.onloadfailed = function() {
             that.loadedCount += 1;
+
+            console.log("load failed " + assetName + " from " + url);
         };
     }.bind(this);
     xhr.send();
@@ -1042,8 +1049,10 @@ var Xhr = function(param) {
     var that = this;
     var xhr = this.xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
+        // console.log("xhr.readyState = " + this.readyState);
         if (this.readyState === 4) {
-            if (this.status === 200 || this.status === 201) {
+            // console.log("xhr.status = " + this.status);
+            if (this.status === 0 || this.status === 200 || this.status === 201) {
                 that.onsuccess(this.response);
             } else {
                 that.onerror(this);
@@ -1074,7 +1083,7 @@ var Xhr = function(param) {
  *
  */
 Xhr.prototype.send = function() {
-    console.debug("xhr send to " + this.param.url);
+    // console.log("xhr send to " + this.param.url);
     if (this.param.data) {
         this.xhr.send(this.param.data);
     } else {
@@ -1170,9 +1179,11 @@ var Sound = function(data) {
 
             this.onload();
         } else {
+            console.error("invalid data.");
             throw new Error("invalid data.");
         }
     } else {
+        console.error("webkitAudioContext is not defined.")
         throw new Error("webkitAudioContext is not defined.");
     }
 };
