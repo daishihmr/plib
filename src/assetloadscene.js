@@ -22,6 +22,7 @@ var AssetLoadScene = function(assets, nextScene) {
             if (ext) {
                 switch (ext[0]) {
                 case ".mp3":
+                case ".m4a":
                     this._loadAudio(key, asset);
                     break;
                 case ".ttf":
