@@ -31,7 +31,7 @@ var SC_W = SC_W || 320;
 /**
  * @const
  */
-var SC_H = SC_H || 320;
+var SC_H = SC_H || 480;
 
 /**
  * @const
